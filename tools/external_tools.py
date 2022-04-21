@@ -11,6 +11,7 @@ from configs import Configs
 
 CLUSTAL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "clustal/clustalo")
 FASTTREE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fasttree/FastTree")
+FASTTREEMP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fasttree/FastTreeMP")
 RAXML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "raxmlng/raxml-ng")
 IQTREE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "iqtree/iqtree")
 
@@ -40,10 +41,12 @@ def runClustalOmegaGuideTree(fastaPath, workingDir, outputPath, threads = 1):
     taskArgs = {"command" : subprocess.list2cmdline(args), "fileCopyMap" : {tempPath : outputPath}, "workingDir" : workingDir, "outputFile" : outputPath}
     return taskArgs
 
-def runFastTree(fastaFilePath, workingDir, outputPath, mode = "normal", intree = None):
+def runFastTree(fastaFilePath, workingDir, outputPath, mode = "normal", intree = None, openmp = False):
     tempPath = os.path.join(os.path.dirname(outputPath), "temp_{}".format(os.path.basename(outputPath)))
     
     args = [FASTTREE_PATH]
+    if openmp:
+        args = [FASTTREEMP_PATH]
     if Configs.inferDataType(fastaFilePath) == "protein":
         args.extend(["-lg"])
     else:

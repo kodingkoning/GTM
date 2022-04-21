@@ -29,7 +29,11 @@ def buildTree(method, outputPath, **kwargs):
     elif method.lower() == "fasttree":
         task = external_tools.runFastTree(kwargs["alignmentPath"], workingDir, outputPath, kwargs.get("mode","normal"), kwargs.get("startTreePath"))
         external_tools.runCommand(**task)
-    
+
+    elif method.lower() == "fasttreemp":
+        task = external_tools.runFastTree(kwargs["alignmentPath"], workingDir, outputPath, kwargs.get("mode","normal"), kwargs.get("startTreePath"), openmp=True)
+        external_tools.runCommand(**task)
+ 
     elif method.lower() == "iqtree":
         task = external_tools.runIqTree(kwargs["alignmentPath"], kwargs.get("model"), workingDir, kwargs.get("startTreePath"), 
                                          kwargs.get("constraintTreePath"), outputPath, Configs.numCores)
@@ -49,6 +53,7 @@ def buildTree(method, outputPath, **kwargs):
         buildTreemerTree(workingDir, kwargs["alignmentPath"], 10, outputPath)
     else:
         raise Exception("Tree estimation method {} not recognized..".format(method))
+    return 0
     
     
 def raxmlEvaluateModelParameters(treePath, alignmentPath, model, outputPath):
