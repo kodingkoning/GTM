@@ -55,7 +55,7 @@ class Configs:
 
     @staticmethod
     def log(msg, path = None):
-        print(msg)
+        print(msg, flush=True)
         path = Configs.logPath if path is None else path
         Configs.writeMsg(msg, path)
     
@@ -67,7 +67,7 @@ class Configs:
     
     @staticmethod
     def debug(msg, path = None):
-        print(msg)
+        print(msg, flush=True)
         path = Configs.debugPath if path is None else path
         Configs.writeMsg(msg, path)
     
@@ -148,4 +148,4 @@ def buildConfigs(args):
     Configs.logPath = os.path.join(Configs.workingDir, "log.txt")    
     Configs.errorPath = os.path.join(Configs.workingDir, "log_errors.txt")
     Configs.debugPath = os.path.join(Configs.workingDir, "log_debug.txt") 
-    
+ 
