@@ -28,6 +28,7 @@ class PipelineContext:
         self.model = None
         self.modelSourcePath = None
         self.trackMLScores = False
+        self.useParsl = False
         
         self.taxaLengths = None
         self.topLevelStartTreePath = None

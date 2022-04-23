@@ -12,8 +12,7 @@ from configs import buildConfigs, Configs
 from pipeline.pipeline_context import PipelineContext
 from pipeline import pipeline_operations
 from tree_refiner import tree_refiner_operations
-
-        
+ 
 def main(args):   
     startTime = time.time()
     
@@ -32,8 +31,17 @@ def regularPipeline():
                               guideTreePath = Configs.guideTreePath, 
                               model = Configs.model, 
                               modelSourcePath = Configs.modelSourcePath,
-                              trackMLScores = Configs.trackMLScores)
-    
+                              trackMLScores = Configs.trackMLScores,
+                              useParsl = Configs.useParsl)
+
+    if Configs.useParsl:
+        from useParsl import parslHelper
+        import parsl
+        Configs.log("Loading Parsl..")
+        # Parsl setup
+        parslConfig = parslHelper.getConfig()
+        parsl.load(parslConfig)
+
     for i in range(Configs.iterations):
         startTime = time.time()
         Configs.log("Starting iteration {} of {}..".format(i+1, Configs.iterations))
@@ -152,4 +160,9 @@ if __name__ == "__main__":
                         help="Log the current ML scores",
                         required=False, default="false")
 
+    parser.add_argument("--parsl", type=str,
+                        help="Use Parsl for subtree parallelism",
+                        required=False, default="false")
+
     main(parser.parse_args())
+

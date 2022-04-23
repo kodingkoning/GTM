@@ -57,6 +57,9 @@ def buildSubtrees(context, workingDir):
     os.makedirs(subtreesDir)
     
     subtreePaths = {}
+    results = []
+    if context.useParsl:
+        from useParsl import parslHelper
     for subsetPath, subset in context.subsetPaths.items():
         baseName = os.path.basename(subsetPath).split(".")[0]
         subTreePath = os.path.join(subtreesDir, "subtree_{}.tre".format(baseName))
@@ -64,9 +67,15 @@ def buildSubtrees(context, workingDir):
         inducedStartTree = None
         if context.getStartTreeForML() is not None:
             inducedStartTree = methods.extractInducedTree(subtreesDir, context.getStartTreeForML(), subsetPath)
-        methods.buildTree(Configs.treeMethod, subTreePath, alignmentPath = subsetPath, 
-                          startTreePath = inducedStartTree, model = context.model)
-    
+        if context.useParsl:
+            results.append(parslHelper.parslBuildTree(Configs.treeMethod, subTreePath, alignmentPath = subsetPath,
+                              startTreePath = inducedStartTree, model = context.model))
+        else:
+            methods.buildTree(Configs.treeMethod, subTreePath, alignmentPath = subsetPath, 
+                              startTreePath = inducedStartTree, model = context.model)
+    if context.useParsl:
+        for r in results:
+            r.result()
     return subtreePaths  
 
 def buildGuideTree(context, workingDir):

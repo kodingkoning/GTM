@@ -33,6 +33,7 @@ class Configs:
     modelSourcePath = None
     useInducedStartTreeForML = False
     trackMLScores = False
+    userParsl = False
     
     iterations = 1
     decompositionMaxNumSubsets = 1000
@@ -141,6 +142,7 @@ def buildConfigs(args):
     Configs.mode = args.mode
     Configs.useInducedStartTreeForML = args.useinducedstarttreeforml.lower() == "true"
     Configs.trackMLScores = args.trackmlscores.lower() == "true"
+    Configs.useParsl = args.parsl.lower() == "true"
     
     Configs.useBootstrap = args.bootstrap.lower() == "true"
     Configs.bootstrapTrees = args.bootstraptrees
