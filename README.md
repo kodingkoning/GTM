@@ -34,38 +34,44 @@ In order to use Parsl parallelism, you must have [Parsl installed](https://parsl
 
 For your conda environment, we recommend using Python 3.7.
 
-```
-# excerpted from useParsl/parslHelper.py
-
-def getConfig():
-    # Campus Cluster Configuration
-    CampusClusterConfig = Config(
-         executors=[
-              HighThroughputExecutor(
-                   label="CC_htex",
-                   worker_debug=False,
-                   address=address_by_hostname(),
-                   cores_per_worker=16.0,
-                   provider=SlurmProvider(
-                        partition='secondary-fdr', # partition
-                        nodes_per_block=2, #number of nodes
-                        init_blocks=1,
-                        max_blocks=50,
-                        scheduler_options='',
-                        cmd_timeout=60,
-                        walltime='04:00:00',
-                        launcher=SrunLauncher(),
-                        worker_init='conda activate /home/ekoning2/scratch/Parsl_test/envParsl37',
-                   ),
-              )
-         ],
-    )
-
-    # NOTE: change this for use on other clusters
-    return CampusClusterConfig
-```
+See `useParsl/parslHelper.py` for the default configuration and to update the configuration for your own use.
 
 At minimum, change the flag for `run_pipeline.py` to `--parsl True`, set the partition in the config to the queue you would like to use, and change the path for the conda environment activation. Check that the maximum blocks and scheduler options work for your account and system.
+
+### What parameters should I use for Parsl?
+
+The ideal Parsl parameters depend on the hardware you are using, how busy your machine is, and the size of the tree you are working with. The parameters in *bold* are mandatory to check/change.
+
+- Executor
+        - Currently, GTM uses a HighThroughputExecutor labeled "iqtree_htex" for the subtree steps, and then a WorkQueueExecutor to run the other tree building steps. This allows the steps building the large trees to be assigned more hardware resources than the steps building the subtrees.
+- *Provider*
+	- By default, GTM will use a SlurmProvider for the subtree building step and a LocalProvider for building the other trees. Using the SlurmProvider allows the resources used by the software to expand during the embarassingly parallel phase of building the subtrees. Using the LocalProvider for the other steps means that the other tree building steps will use the node allocated for the job. In the future, we will implement an option that will allow for running the Python script on a login node and start jobs for all the expensive computation.
+	- If you are on a different sort of machine, such as a aprun machine or laptop, Parsl has [configuration documentation](https://parsl.readthedocs.io/en/stable/userguide/configuring.html) to help select which provider and parameters could be suitable for that machine.
+- *Memory per worker*
+		- In GB, this is the minimum memory required per worker. This depends on the software you are using and the size of the trees they are estimating. This will need to be higher for the WorkQueueExecutor since it is handling the starting tree and can be much lower for the HighThroughputExecutor for the subtrees. 
+- Label
+	- The label for each of the executors is used by Parsl to decide which of the executors to use for a given step. If you change the executors, these names need to be changed as well. If you want to rename them or add more executors, you can do so in `pipeline/pipeline_operations.py`.
+- Parallelism
+	- Parsl's documentation provides a description of the [parallelism parameter](https://parsl.readthedocs.io/en/stable/userguide/execution.html?highlight=executors#parallelism). A higher level of parallelism will conserve resources, and a lower level of parallelism will request additional blocks more eagerly.
+- HighThroughputExecutor SlurmProvider (some fields will also apply to other provider types)
+	- *Partition*
+		- The partition for the Slurm provider MUST match your account and your machine. This is the queue that will be used by Parsl to request resources when this executor is used. You should use a queue that has the nodes you would like to use, and ideally one with short wait times. If there are long wait times, then the main work stream will need to wait on the resources.
+	- Nodes per block
+		- This is the number of nodes you would like to request at one time. This depends on both your job size and machine. A high number of nodes in a block means that Parsl will start fewer jobs, but it could also mean that some of the resources may sit idle. One or two may be good numbers of nodes in many situations since no task performed in GTM will be able to use multiple nodes on its own.
+	- Init blocks
+		- In most cases, this should be 0. Starting with no blocks allows the initial steps of building and decomposing the starting tree to execute without extra resources sitting idle.
+	- *Max blocks*
+		- The maximum number of blocks completely depends on the size of the tree you are estimating and the resources available to you. If you will be estimating many subtrees, it will be useful to have a higher block maximum. If you set it too low and do not maximize the parallelism, then the additional tasks will run after the first set of tasks has completed. If you set it too high, then not all of the blocks will be requested. Setting this too high instead of too low is useful for GTM to complete as quickly as possible.
+	- Scheduler options
+		-These are the options needed for Slurm. There may be none, but if you have particular `#SBATCH` arguments to include, this is where to add them.
+	- Command timeout
+		- This is the amount of time that Parsl will wait between calling srun and the resources being allocated. Setting a longer amount of time will make GTM more robust to busy queues.
+	- *Walltime*
+		- This is the amount of time that Parsl wil request each block for. The minimum time to request would be the time required for building a subtree. The maximum time is the maximum for the queue you are using. Choosing a time shorter than needed to build a single subtree will be fatal. Choosing too long of a time will mean that all of the blocks will keep their resources until the end of GTM's execution, and therefore resources will be wasted. If you are not refining the tree after merging the trees, that time will be negligible. If you are refining the trees, then that could mean large numbers of nodes are sitting idle. A good medium amount of time in the case where the maximum blocks * maximum tasks per block exceeds the number of subtrees would be the maximum time for computing a subtree. In the case where the number of subtrees is larger than the subtrees that will be estimated at the same time, a good amount of time would be `(max time for subtree) * (number of subtrees) / ( (max blocks) * (nodes per block) * (jobs per node) )`. Jobs per node depends on the number of threads given to each of the jobs.
+	- *Launcher*
+		- Srun works for Slurm machines. This parameter depends on the management of the machine you are using, so look to Parsl's documentation for selection your launcher.
+	- Cores per worker
+		- This is the number of cores to give each task. This depends on which subtree application you are using, and the size of each job. If you are using IQ-TREE, then it is parallelized across the length of the sequences. You may want to try an experimental run with some of your sequences to see how many threads IQ-TREE or the application used for this step can efficiently use. For example, with IQ-TREE and RNASim sequences, it can only use one thread efficiently, so this should be set to 1. You should also check the amount of memory that each subtree task will require and make sure the number of subtrees per node * memory required for each < memory per node.
 
 - - - -
 
