@@ -31,7 +31,7 @@ def getConfig():
                         cmd_timeout=120,
                         walltime='01:30:00',
                         launcher=SrunLauncher(),
-                        worker_init='conda activate /home/ekoning2/scratch/Parsl_test/envParsl37',
+                        worker_init='conda activate parslEnv',
                    ),
               ),
               WorkQueueExecutor(
@@ -54,7 +54,7 @@ def getConfig():
                    #     cmd_timeout=120,
                    #     walltime='04:00:00', # may need a different queue for maximum runtime
                    #     launcher=SrunLauncher(),
-                   #     worker_init='conda activate /home/ekoning2/scratch/Parsl_test/envParsl37',
+                   #     worker_init='conda activate parslEnv',
                    #),
               ),
          ],
