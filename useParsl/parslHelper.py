@@ -29,7 +29,7 @@ def getConfig():
                         max_blocks=50,
                         scheduler_options='',
                         cmd_timeout=120,
-                        walltime='00:30:00',
+                        walltime='01:30:00',
                         launcher=SrunLauncher(),
                         worker_init='conda activate /home/ekoning2/scratch/Parsl_test/envParsl37',
                    ),

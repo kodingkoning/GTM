@@ -30,15 +30,17 @@ To run the entire pipeline in one command, we can use run\_pipeline.py and speci
 
 ## Using parallelism
 
-In order to use Parsl parallelism, you must have [Parsl installed](https://parsl.readthedocs.io/en/stable/quickstart.html) in a conda environment. Then, modify useParsl/parslHelper.py for the appropriate configuration based on the machine you are running on. The `getConfig()` function must return the configuration suitable for your system. The example given is for UIUC's Campus Cluster. Similar configurations will work for other slurm-managed machines. Parsl's documentation has [examples from many different machines](https://parsl.readthedocs.io/en/stable/userguide/configuring.html)
+In order to use Parsl parallelism, you must have [Parsl installed](https://parsl.readthedocs.io/en/stable/quickstart.html) in a conda environment. Then, modify useParsl/parslHelper.py for the appropriate configuration based on the machine you are running on. The `getConfig()` function must return the configuration suitable for your system. The example given is for UIUC's Campus Cluster. Similar configurations will work for other slurm-managed machines. Parsl's documentation has [examples from many different machines](https://parsl.readthedocs.io/en/stable/userguide/configuring.html).
 
 For your conda environment, we recommend using Python 3.7.
 
-See `useParsl/parslHelper.py` for the default configuration and to update the configuration for your own use.
-
 At minimum, change the flag for `run_pipeline.py` to `--parsl True`, set the partition in the config to the queue you would like to use, and change the path for the conda environment activation. Check that the maximum blocks and scheduler options work for your account and system.
 
+Parsl works by allocating "blocks" (which can be one or multiple nodes) and setting tasks to work on them. The advantage of this is that where only one node can be used (such as when FastTree is creating a starting tree) only one node will be allocated. The aspect to keep in mind while running GTM with Parsl is that it does have to dynamically acquire time on compute nodes.
+
 ### What parameters should I use for Parsl?
+
+See `useParsl/parslHelper.py` for the default configuration and to update the configuration for your own use.
 
 The ideal Parsl parameters depend on the hardware you are using, how busy your machine is, and the size of the tree you are working with. The parameters in __bold__ are mandatory to check/change.
 
