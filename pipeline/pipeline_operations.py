@@ -34,10 +34,12 @@ def buildConstraintTrees(context, workingDir):
         updateModel(context)
         Configs.log("Building starting tree..")
         context.startTreePath = os.path.join(workingDir, "start_tree.tre")
-        if context.useParsl:
-            parslHelper.parslBuildTreeWQ(Configs.startTreeMethod, context.startTreePath, alignmentPath = context.alignmentPath, model = context.model).result()
-        else:
-            methods.buildTree(Configs.startTreeMethod, context.startTreePath, alignmentPath = context.alignmentPath, model = context.model)
+        #if context.useParsl:
+        #    #from useParsl import parslHelper
+        #    #parslHelper.parslBuildTreeWQ(Configs.startTreeMethod, context.startTreePath, alignmentPath = context.alignmentPath, model = context.model).result()
+        #    methods.buildTree(Configs.startTreeMethod, context.startTreePath, alignmentPath = context.alignmentPath, model = context.model)
+        #else:
+        methods.buildTree(Configs.startTreeMethod, context.startTreePath, alignmentPath = context.alignmentPath, model = context.model)
     
     if context.topLevelStartTreePath is None:
         context.topLevelStartTreePath = context.startTreePath
@@ -71,7 +73,7 @@ def buildSubtrees(context, workingDir):
         if context.getStartTreeForML() is not None:
             inducedStartTree = methods.extractInducedTree(subtreesDir, context.getStartTreeForML(), subsetPath)
         if context.useParsl:
-            results.append(parslHelper.parslBuildTree(Configs.treeMethod, subTreePath, alignmentPath = subsetPath,
+            results.append(parslHelper.parslBuildTree(Configs.treeMethod, subTreePath, parsl_resource_specification={'cores': 1, 'running_time_min': 3600}, alignmentPath = subsetPath,
                               startTreePath = inducedStartTree, model = context.model))
         else:
             methods.buildTree(Configs.treeMethod, subTreePath, alignmentPath = subsetPath, 
@@ -97,11 +99,11 @@ def buildFullGuideTree(context, workingDir):
         context.guideTreePath = context.startTreePath
     else:
         context.guideTreePath = os.path.join(workingDir, "guide_tree.tre")
-        if context.useParsl:
-            parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = context.alignmentPath,
-                          startTreePath = context.getStartTreeForML(), model = context.model).result
-        else:
-            methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = context.alignmentPath, 
+        #if context.useParsl:
+        #    parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = context.alignmentPath,
+        #                  startTreePath = context.getStartTreeForML(), model = context.model).result
+        #else:
+        methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = context.alignmentPath, 
                           startTreePath = context.getStartTreeForML(), model = context.model)
         
 def buildRecursiveGuideTree(context, workingDir):
@@ -132,12 +134,11 @@ def buildRecursiveGuideTree(context, workingDir):
             startTreePath = context.getStartTreeForML()
             if startTreePath is not None:
                 startTreePath = methods.extractInducedTree(workingDir, startTreePath, alignPath)    
-            if context.useParsl:
-                parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath,
-                                            startTreePath = startTreePath, model = context.model).result()
-            else:
-                methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath, 
-                                  startTreePath = startTreePath, model = context.model)
+            #if context.useParsl:
+            #    parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath,
+            #                                startTreePath = startTreePath, model = context.model).result()
+            # else:
+            methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath, startTreePath = startTreePath, model = context.model)
     else:
             newWorkingDir = os.path.join(workingDir, "guide_tree")
             newStartTreePath = os.path.join(newWorkingDir, "start_tree.tre")
@@ -166,12 +167,12 @@ def buildPartialGuideTree(context, workingDir):
     startTreePath = context.getStartTreeForML()
     if startTreePath is not None:
         startTreePath = methods.extractInducedTree(workingDir, startTreePath, alignPath)    
-    if context.useParsl:
-        parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath,
-                                   startTreePath = startTreePath, model = context.model).result()
-    else:
-        methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath, 
-                          startTreePath = startTreePath, model = context.model)
+    #if context.useParsl:
+    #    parslHelper.parslBuildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath,
+    #                               startTreePath = startTreePath, model = context.model).result()
+    #else:
+    methods.buildTree(Configs.guideTreeMethod, context.guideTreePath, alignmentPath = alignPath, 
+                      startTreePath = startTreePath, model = context.model)
 
 def updateModel(context):
     if context.modelSourcePath == "estimate":

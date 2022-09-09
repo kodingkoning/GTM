@@ -32,7 +32,12 @@ To run the entire pipeline in one command, we can use run\_pipeline.py and speci
 
 In order to use Parsl parallelism, you must have [Parsl installed](https://parsl.readthedocs.io/en/stable/quickstart.html) in a conda environment. Then, modify useParsl/parslHelper.py for the appropriate configuration based on the machine you are running on. The `getConfig()` function must return the configuration suitable for your system. The example given is for UIUC's Campus Cluster. Similar configurations will work for other slurm-managed machines. Parsl's documentation has [examples from many different machines](https://parsl.readthedocs.io/en/stable/userguide/configuring.html).
 
-For your conda environment, we recommend using Python 3.7.
+For your conda environment, we recommend using Python 3.7. `conda-forge ndcctools parsl` are all required packages. you can create a conda environment as `conda create --name myParslEnv python3.7 conda-forge ndcctools parsl`
+
+```
+conda create -p PATH python=3.7
+conda install -y -c conda-forge ndcctools parsl
+```
 
 At minimum, change the flag for `run_pipeline.py` to `--parsl True`, set the partition in the config to the queue you would like to use, and change the path for the conda environment activation. Check that the maximum blocks and scheduler options work for your account and system.
 
